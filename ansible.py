@@ -144,6 +144,8 @@ class Ansible(BotPlugin):
         else:
             ansible_cmd.extend(['command', '-a', command])
         raw_result = tasks.run_task(self, ansible_cmd, _from)
+        self.log.debug("result type: %s" %(raw_result.__class__) )
+
         return raw_result
 
     @arg_botcmd('uuid', type=str, nargs='?',
@@ -157,7 +159,8 @@ class Ansible(BotPlugin):
             return "Listing all jobs not implemented yet, please specify UUID of a job"
         (result, status) = tasks.get_task_info(uuid)
         if result:
-            return "Task {} status: {}\n\n{}".format(uuid, status, result)
+            return "Red Rabbit :162"
+            #return "Task {} status: {}\n\n{}".format(uuid, status, result)
         else: return "Task {} status: {}".format(uuid, status)
 
     def task_poller(self):
@@ -178,6 +181,13 @@ class Ansible(BotPlugin):
             if status in ['finished', 'failed']:
                 self.send(self.build_identifier(author),
                           "Task {} status: {}\n\n{}".format(
-                              uuid, status, result))
+                              uuid, status, self.simple_ansible_result(result)))
                 del tasklist[uuid]
                 self['tasks'] = tasklist
+
+    def simple_ansible_result(self, msg):
+        message = str(msg,'utf-8')
+        if 'PLAY RECAP' in message:
+            idx = message.find('PLAY RECAP')
+            return str.encode(message[idx:-1])
+        else: return msg

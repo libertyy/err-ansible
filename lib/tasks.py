@@ -60,5 +60,3 @@ def handle_task_exception(task, exc_type, exc_value, traceback):
     task_id = task.get_id()
     redis = task.connection
     redis.hset("rq:job:{}".format(task_id), 'result', dumps(output))
-
-
